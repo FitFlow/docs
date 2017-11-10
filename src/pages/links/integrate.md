@@ -39,7 +39,7 @@
             | Facebook Messenger | Fallback | *Able to force app open | App |
             | Facebook Messenger browser | App | | App |
             | Instagram | Fallback | *Able to force app open | App |
-            | Snapchat | Fallback | | App |
+            | Snapchat | Fallback | *Able to force app open | App |
             | Twitter | Fallback | *Able to force app open | App |
             | Pinterest | Fallback | | Fallback |
             | Chrome browser | App | | App |
@@ -54,14 +54,11 @@
             | Firefox address bar | Fallback | | App
             | Hangouts | App | | App |
             | iMessage | App |
-            | Slack | App | Must configure Slack to open links with Safari | App | Must configure Slack to open links with Safari
+            | Slack | App | Must configure Slack to open links with Safari | App | 
             | WeChat | Fallback | Customize [WeChat fallback urls](#redirections) | Fallback | Customize [WeChat fallback urls](#redirections)
             | WhatsApp | App | `app.link` require https/http to be clickable | App | `app.link` require https/http to be clickable
             | Apple Mail | App |
             | Gmail | App | | App
-
-
-
 
 - ### Custom link behavior
 
@@ -100,8 +97,7 @@
                 - *[or]* Append `/e/` to the deep link
                     - e.g. `https://example.app.link/fzmLEhobLD` -> `https://example.app.link/e/fzmLEhobLD`
             - *Android:* need to override `App Links`
-                - TODO: validate. may need `Always open app` unchecked
-                - Uncheck `Enable App Links` and `Save` the [Branch Dashboard](https://dashboard.branch.io/link-settings)
+                - Uncheck `Always Open App`, `Enable App Links` and then hit `Save` the [Branch Dashboard](https://dashboard.branch.io/link-settings)
                 - Add redirect `$android_url = 'https://google.com'` ([docs](/pages/links/integrate/#redirections))
                 - Add a broken URI Scheme with `$android_deeplink_path = 'random'` ([docs](/pages/links/integrate/#deep-linking))
 
@@ -125,6 +121,7 @@
         - Use our [App SDK](#dialog-code?ios=create-deep-link&android=create-deep-link&adobe=create-deep-link&cordova=create-deep-link&mparticleAndroid=create-deep-link&mparticleIos=create-deep-link&titanium=create-deep-link&reactNative=create-deep-link&unity=create-deep-link&xamarin=create-deep-link) to create and share links within your app
         - Use our [Web SDK](/pages/web/integrate/#create-deep-link) to create to links convert web to app users
         - Use our [HTTP API](/pages/apps/api/#link-create) to programmatically create links from your server
+        - Use our [Chrome Extension](https://chrome.google.com/webstore/detail/branch-link-creator/pekdpppibljpmpbcjelehhnldnfbglgf) to generate links from your browser
 
 - ### Long links
     - Long links can be created without a network call to Branch
@@ -151,7 +148,7 @@
         | campaign | | Use this field to organize the links by actual campaign. For example, if you launched a new feature or product and want to run a campaign around that
         | stage | | Use this to categorize the progress or category of a user when the link was generated. For example, if you had an invite system accessible on level 1, level 3 and 5, you could differentiate links generated at each level with this parameter
         | tags | | This is a free form entry with unlimited values `['string']`. Use it to organize your link data with labels that don't fit within the bounds of the above
-        | alias | | Specify a link alias in place of the standard encoded short URL e.g. `yourdomain.com/youralias`. Link aliases are unique, immutable objects that cannot be deleted. You cannot change the alias of existing links. Aliases on the legacy `bnc.lt` domain are incompatible with Universal Links and Spotlight
+        | alias | | Specify a link alias to replace of the standard encoded short URL (e.g. `https://example.app.link/aQXXDHaxKF` -> `https://example.app.link/youralias`). Link aliases must be unique (a `409 error` will occur if you create an alias already taken). Appending a `/` will break the alias. `bnc.lt` link domain alias links are incompatible with Universal Links and Spotlight.
         | type | `0` | Must be an `int`. Set to `1` to limit deep link to a single use. Set to `2` to make the link show up under [Quick Links](https://dashboard.branch.io/marketing) while adding `$marketing_title` to `data`. Does not work with the Native SDKs.
 
 - ### Custom data
@@ -187,8 +184,6 @@
         | $web_only | `false` | Force to open the `$fallback_url` instead of the app
 
 - ### Forced redirections
-
-    - Override
 
     - Prevent error messages from other apps when Branch deep links are clicked
 
@@ -264,7 +259,7 @@
         | $og_image_height | | Set the image's height in pixels for social media displays
         | $og_video | | Set a video as it will be seen in social media displays
         | $og_url | | Set the base URL of the link as it will be seen in social media displays
-        | $og_type | | Set the type of custom card format link as it will be seen in social media displays
+        | $og_type | | Set the type of custom card format link as it will be seen in social media displays. Don't set this property when sharing deep links on Facebook
         | $og_redirect | | (Advanced, not recommended) Set a custom URL that we redirect the social media robots to in order to retrieve all the appropriate tags
         | $og_app_id | Set on dashboard | (Rarely used) Sets the app id tag
 
@@ -284,6 +279,18 @@
         | $twitter_player_width | | Set the player's width in pixels
         | $twitter_player_height | | Set the player's height in pixels
 
+- ### Custom Tags
+    
+    - Handle custom meta tags
+
+        | Key | Value
+        | --- | ---
+        | $custom_meta_tags | Valid stringified JSON dictionary of the tags’ keys and values
+
+    - Valid dictionary example: "{\"twitter:player:stream\": \"https://branch.io\"}". This will result in the following meta tag: `<meta property="twitter:player:stream" content="https://branch.io" />`
+    - If you create the link via the Dashboard, don’t worry about stringifying the dictionary. It will be done automatically.
+    - apple_touch_icon is a special key in the dictionary. If you set it, we will add a `<link rel="apple-touch-icon" href="<url>" />` tag to the scraped HTML page. This will allow you to show a custom icon for previews in iMessage, Safari Bookmarks, Slack, etc.
+    
 - ### Universal Object
 
     - Properties for the Branch Universal Object within your [app](#dialog-code?ios=create-content-reference&android=create-content-reference&adobe=create-deep-link&cordova=create-content-reference&mparticleAndroid=create-content-reference&mparticleIos=create-content-reference&titanium=create-content-reference&reactNative=create-content-reference&unity=create-content-reference&xamarin=create-content-reference) integration
